@@ -1,0 +1,28 @@
+kind = "data-app"
+previewPath = "/"
+title = "Lottery Analytics"
+description = "A transparent NY Lottery analytics dashboard that fetches official draw history, evaluates number-level predictive models, visualizes patterns and model performance, and generates downloadable analysis reports."
+version = "1.0.0"
+id = "artifacts/lottery-analytics"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23972
+
+[services.development]
+run = "pnpm --filter @workspace/lottery-analytics run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/lottery-analytics", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/lottery-analytics/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23972"
+BASE_PATH = "/"
