@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: lottery
+    description: NY Lottery data and model analysis
 paths:
   /healthz:
     get:
@@ -24,6 +26,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /lottery/analysis:
+    get:
+      operationId: getLotteryAnalysis
+      tags: [lottery]
+      summary: Fetch NY Lottery history and model analysis
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 100
+            maximum: 2000
+            default: 500
+      responses:
+        "200":
+          description: Lottery history, evaluation, insights, and predictions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LotteryAnalysis"
+        "502":
+          description: Upstream data source unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +62,126 @@ components:
           type: string
       required:
         - status
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    LotteryDraw:
+      type: object
+      properties:
+        drawDate:
+          type: string
+        numbers:
+          type: array
+          items:
+            type: number
+        sum:
+          type: number
+        oddCount:
+          type: number
+        consecutivePairs:
+          type: number
+      required: [drawDate, numbers, sum, oddCount, consecutivePairs]
+    NumberStat:
+      type: object
+      properties:
+        number:
+          type: number
+        count:
+          type: number
+        rate:
+          type: number
+        recentCount:
+          type: number
+        lastSeen:
+          type: string
+      required: [number, count, rate, recentCount, lastSeen]
+    ModelMetric:
+      type: object
+      properties:
+        name:
+          type: string
+        threeHitRate:
+          type: number
+        averageHits:
+          type: number
+        exactMatchRate:
+          type: number
+        note:
+          type: string
+      required: [name, threeHitRate, averageHits, exactMatchRate, note]
+    Prediction:
+      type: object
+      properties:
+        model:
+          type: string
+        numbers:
+          type: array
+          items:
+            type: number
+        rationale:
+          type: string
+      required: [model, numbers, rationale]
+    TrendPoint:
+      type: object
+      properties:
+        period:
+          type: string
+        averageSum:
+          type: number
+        averageOdd:
+          type: number
+      required: [period, averageSum, averageOdd]
+    LotteryAnalysis:
+      type: object
+      properties:
+        source:
+          type: string
+        game:
+          type: string
+        fetchedAt:
+          type: string
+        drawCount:
+          type: number
+        latestDraw:
+          $ref: "#/components/schemas/LotteryDraw"
+        draws:
+          type: array
+          items:
+            $ref: "#/components/schemas/LotteryDraw"
+        numberStats:
+          type: array
+          items:
+            $ref: "#/components/schemas/NumberStat"
+        trends:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendPoint"
+        modelMetrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModelMetric"
+        predictions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Prediction"
+        insights:
+          type: array
+          items:
+            type: string
+      required:
+        - source
+        - game
+        - fetchedAt
+        - drawCount
+        - latestDraw
+        - draws
+        - numberStats
+        - trends
+        - modelMetrics
+        - predictions
+        - insights
 
